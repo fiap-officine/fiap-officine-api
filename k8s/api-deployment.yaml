@@ -24,6 +24,8 @@ spec:
           command:
             - uv
             - run
+            - --no-dev
+            - --no-sync
             - alembic
             - upgrade
             - head
@@ -59,6 +61,8 @@ spec:
           command:
             - uv
             - run
+            - --no-dev
+            - --no-sync
             - uvicorn
             - app.main:app
             - --host
@@ -68,7 +72,6 @@ spec:
           ports:
             - name: http
               containerPort: 8000
-              hostPort: 80
               protocol: TCP
           envFrom:
             - configMapRef:

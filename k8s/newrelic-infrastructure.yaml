@@ -20,7 +20,7 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: newrelic-infrastructure
-          image: newrelic/infrastructure-k8s:3.2.14
+          image: newrelic/infrastructure:latest
           securityContext:
             privileged: true
           resources:

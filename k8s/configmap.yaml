@@ -17,3 +17,4 @@ data:
   APP_ENV: "production"
   APP_DEBUG: "false"
   AUTH_LAMBDA_URL: "https://kai652jumh.execute-api.sa-east-1.amazonaws.com"
+  UV_NO_SYNC: "1"
