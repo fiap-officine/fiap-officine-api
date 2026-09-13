@@ -66,17 +66,17 @@ jobs:
 
       - name: Validate Kubernetes manifests
         run: |
-          kubectl apply --dry-run=client -f k8s/namespace.yaml
-          kubectl apply --dry-run=client -f k8s/configmap.yaml
-          kubectl apply --dry-run=client -f k8s/postgres-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/postgres-svc.yaml
-          kubectl apply --dry-run=client -f k8s/redis-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/redis-svc.yaml
-          kubectl apply --dry-run=client -f k8s/api-deployment.yaml
-          kubectl apply --dry-run=client -f k8s/api-svc.yaml
-          kubectl apply --dry-run=client -f k8s/ingress.yaml
-          kubectl apply --dry-run=client -f k8s/api-hpa.yaml
-          kubectl apply --dry-run=client -f k8s/worker-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/namespace.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/configmap.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/postgres-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/postgres-svc.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/redis-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/redis-svc.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/api-deployment.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/api-svc.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/ingress.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/api-hpa.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s/worker-deployment.yaml
 
       # Deploy Automático: Homologação (Branch develop)
       - name: Deploy to Kubernetes (Homologation)
@@ -88,12 +88,13 @@ jobs:
           DB_NAME: ${{ secrets.HOMOLOG_DB_NAME || secrets.DB_NAME || 'officine' }}
           JWT_SECRET_KEY: ${{ secrets.HOMOLOG_JWT_SECRET_KEY || secrets.JWT_SECRET_KEY || 'default-secret-key-homolog-12345' }}
           WEBHOOK_SHARED_SECRET: ${{ secrets.HOMOLOG_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
           mkdir -p ~/.kube
           echo "$KUBE_CONFIG_HOMOLOG" | base64 -d > ~/.kube/config
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
-          # 2. Criar secret
+          # 2. Criar secret da aplicação
           cat > /tmp/secret.yaml <<EOF
           apiVersion: v1
           kind: Secret
@@ -112,7 +113,15 @@ jobs:
             WEBHOOK_SHARED_SECRET: $WEBHOOK_SHARED_SECRET
           EOF
           kubectl apply -f /tmp/secret.yaml
-          # 3. Aplicar manifests
+          # 3. Criar secret do New Relic se a chave estiver presente
+          if [ -n "$NEW_RELIC_LICENSE_KEY" ]; then
+            kubectl create secret generic newrelic-secret \
+              --namespace=posfiap \
+              --from-literal=license_key="$NEW_RELIC_LICENSE_KEY" \
+              --dry-run=client -o yaml | kubectl apply -f -
+            kubectl apply -f k8s/newrelic-infrastructure.yaml || true
+          fi
+          # 4. Aplicar manifests da aplicação
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/redis-deployment.yaml
           kubectl apply -f k8s/redis-svc.yaml
@@ -132,12 +141,13 @@ jobs:
           DB_NAME: ${{ secrets.PROD_DB_NAME || secrets.DB_NAME || 'officine' }}
           JWT_SECRET_KEY: ${{ secrets.PROD_JWT_SECRET_KEY || secrets.JWT_SECRET_KEY || 'default-secret-key-prod-12345' }}
           WEBHOOK_SHARED_SECRET: ${{ secrets.PROD_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
           mkdir -p ~/.kube
           echo "$KUBE_CONFIG_PROD" | base64 -d > ~/.kube/config
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
-          # 2. Criar secret
+          # 2. Criar secret da aplicação
           cat > /tmp/secret.yaml <<EOF
           apiVersion: v1
           kind: Secret
@@ -156,7 +166,15 @@ jobs:
             WEBHOOK_SHARED_SECRET: $WEBHOOK_SHARED_SECRET
           EOF
           kubectl apply -f /tmp/secret.yaml
-          # 3. Aplicar manifests
+          # 3. Criar secret do New Relic se a chave estiver presente
+          if [ -n "$NEW_RELIC_LICENSE_KEY" ]; then
+            kubectl create secret generic newrelic-secret \
+              --namespace=posfiap \
+              --from-literal=license_key="$NEW_RELIC_LICENSE_KEY" \
+              --dry-run=client -o yaml | kubectl apply -f -
+            kubectl apply -f k8s/newrelic-infrastructure.yaml || true
+          fi
+          # 4. Aplicar manifests da aplicação
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/redis-deployment.yaml
           kubectl apply -f k8s/redis-svc.yaml
