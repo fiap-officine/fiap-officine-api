@@ -312,4 +312,29 @@ Em conformidade com os requisitos do Tech Challenge:
   - Push/Merge em `develop` ➔ Deploy automático para o cluster Kubernetes de **Homologação**.
   - Push/Merge em `main` ➔ Deploy automático para o cluster Kubernetes de **Produção**.
 
+---
+
+## 📊 Monitoramento e Observabilidade (New Relic)
+
+A aplicação conta com observabilidade nativa e integração completa com o **New Relic**:
+
+### 1. Rotas Abertas no API Gateway para Visualização & Monitoramento
+As seguintes rotas públicas não exigem autorização e podem ser acessadas diretamente via navegador ou API Gateway:
+* `GET https://kai652jumh.execute-api.sa-east-1.amazonaws.com/health`: Healthcheck aprofundado (PostgreSQL `SELECT 1` + Redis `PING`).
+* `GET https://kai652jumh.execute-api.sa-east-1.amazonaws.com/api/v1/health`: Endpoint de saúde prefixado.
+* `GET https://kai652jumh.execute-api.sa-east-1.amazonaws.com/docs`: Documentação Swagger interativa aberta.
+* `GET https://kai652jumh.execute-api.sa-east-1.amazonaws.com/openapi.json`: Especificação OpenAPI completa.
+* `GET https://kai652jumh.execute-api.sa-east-1.amazonaws.com/redoc`: Documentação técnica ReDoc.
+
+### 2. Logs Estruturados em JSON & Correlação
+* Todos os logs são emitidos no formato JSON contendo `timestamp`, `level`, `service`, `correlation_id`, `request_id`, `duration_ms`, `trace_id` e `span_id`.
+* O middleware captura ou gera o header `X-Correlation-ID`, propagando o identificador ao longo de todo o ciclo assíncrono.
+
+### 3. Métricas de Cluster Kubernetes
+* O manifesto [`k8s/newrelic-infrastructure.yaml`](k8s/newrelic-infrastructure.yaml) roda como um DaemonSet no cluster K3s coletando métricas de CPU, memória, restarts de pods e nós.
+
+### 4. Dashboards NRQL e Alertas
+* Documentação completa de consultas NRQL para volume diário de OS, tempo médio de execução por status, latência (p50, p95, p99) e alertas de falhas de transição disponível em [docs/observability.md](file:///c:/Users/phpra/projects/fiap-pos/docs/observability.md).
+
+
 

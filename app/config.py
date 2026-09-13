@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     WEBHOOK_SHARED_SECRET: str = "change-me"
     AUTH_LAMBDA_URL: str | None = None
 
+    # Observabilidade & New Relic
+    NEW_RELIC_LICENSE_KEY: str | None = None
+    NEW_RELIC_APP_NAME: str = "fiap-officine-api"
+    LOG_LEVEL: str = "INFO"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

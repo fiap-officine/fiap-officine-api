@@ -122,6 +122,21 @@ def criar_ordem_servico(db: Session, dados: OrdemServicoCreate) -> OrdemServico:
     except Exception:
         pass
 
+    try:
+        import newrelic.agent
+        newrelic.agent.record_custom_event(
+            "OrdemServicoEvent",
+            {
+                "action": "criada",
+                "os_id": ordem.id,
+                "cliente_id": dados.cliente_id,
+                "status": "recebida",
+                "valor_total": float(valor_total),
+            },
+        )
+    except Exception:
+        pass
+
     return ordem
 
 
@@ -170,6 +185,20 @@ def alterar_status(
     status_atual = ordem.status
     transicoes_permitidas = TRANSICOES_VALIDAS.get(status_atual, [])
     if novo_status not in transicoes_permitidas:
+        try:
+            import newrelic.agent
+            newrelic.agent.record_custom_event(
+                "OrdemServicoProcessingFailure",
+                {
+                    "os_id": os_id,
+                    "status_atual": status_atual.value,
+                    "novo_status": novo_status.value,
+                    "tipo_falha": "TransicaoInvalida",
+                    "mensagem": f"Transição de '{status_atual.value}' para '{novo_status.value}' não é permitida.",
+                },
+            )
+        except Exception:
+            pass
         raise HTTPException(
             status_code=400,
             detail=f"Transição de '{status_atual.value}' para '{novo_status.value}' não é permitida. "
@@ -248,6 +277,21 @@ def alterar_status(
                 "ordem_servico_id": os_id,
                 "status_anterior": status_anterior,
                 "status_novo": novo_status.value,
+            },
+        )
+    except Exception:
+        pass
+
+    try:
+        import newrelic.agent
+        newrelic.agent.record_custom_event(
+            "OrdemServicoEvent",
+            {
+                "action": "status_alterado",
+                "os_id": os_id,
+                "status_anterior": status_anterior,
+                "status_novo": novo_status.value,
+                "valor_total": float(ordem.valor_total) if ordem.valor_total else 0.0,
             },
         )
     except Exception:

@@ -99,10 +99,20 @@ spec:
                 secretKeyRef:
                   name: posfiap-secrets
                   key: WEBHOOK_SHARED_SECRET
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: newrelic-secret
+                  key: license_key
+                  optional: true
+            - name: NEW_RELIC_APP_NAME
+              value: "fiap-officine-api"
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+              value: "true"
 
           livenessProbe:
             httpGet:
-              path: /docs
+              path: /health
               port: 8000
             initialDelaySeconds: 30
             periodSeconds: 15
@@ -110,7 +120,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /docs
+              path: /health
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
