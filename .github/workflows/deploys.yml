@@ -72,7 +72,7 @@ jobs:
       - name: Deploy to Kubernetes (Homologation)
         if: github.ref == 'refs/heads/develop' && (env.KUBE_CONFIG_DATA != '' || env.KUBE_CONFIG_HOMOLOG != '')
         env:
-          KUBE_CONFIG_HOMOLOG: ${{ secrets.KUBE_CONFIG_HOMOLOG || secrets.KUBE_CONFIG_DATA }}
+          KUBE_CONFIG_RAW: ${{ secrets.KUBE_CONFIG_HOMOLOG || secrets.KUBE_CONFIG_DATA }}
           DB_USER: ${{ secrets.HOMOLOG_DB_USER || secrets.DB_USER || 'officine_admin' }}
           DB_PASSWORD: ${{ secrets.HOMOLOG_DB_PASSWORD || secrets.DB_PASSWORD || 'password' }}
           DB_NAME: ${{ secrets.HOMOLOG_DB_NAME || secrets.DB_NAME || 'officine' }}
@@ -80,13 +80,7 @@ jobs:
           WEBHOOK_SHARED_SECRET: ${{ secrets.HOMOLOG_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
-          mkdir -p ~/.kube
-          if echo "$KUBE_CONFIG_HOMOLOG" | base64 -d > ~/.kube/config 2>/dev/null && [ -s ~/.kube/config ]; then
-            echo "Kubeconfig decoded from base64."
-          else
-            echo "$KUBE_CONFIG_HOMOLOG" > ~/.kube/config
-            echo "Kubeconfig written as plain YAML."
-          fi
+          python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
@@ -130,7 +124,7 @@ jobs:
       - name: Deploy to Kubernetes (Production)
         if: github.ref == 'refs/heads/main' && (env.KUBE_CONFIG_DATA != '' || env.KUBE_CONFIG_PROD != '')
         env:
-          KUBE_CONFIG_PROD: ${{ secrets.KUBE_CONFIG_PROD || secrets.KUBE_CONFIG_DATA }}
+          KUBE_CONFIG_RAW: ${{ secrets.KUBE_CONFIG_PROD || secrets.KUBE_CONFIG_DATA }}
           DB_USER: ${{ secrets.PROD_DB_USER || secrets.DB_USER || 'officine_admin' }}
           DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD || secrets.DB_PASSWORD || 'password' }}
           DB_NAME: ${{ secrets.PROD_DB_NAME || secrets.DB_NAME || 'officine' }}
@@ -138,13 +132,7 @@ jobs:
           WEBHOOK_SHARED_SECRET: ${{ secrets.PROD_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
-          mkdir -p ~/.kube
-          if echo "$KUBE_CONFIG_PROD" | base64 -d > ~/.kube/config 2>/dev/null && [ -s ~/.kube/config ]; then
-            echo "Kubeconfig decoded from base64."
-          else
-            echo "$KUBE_CONFIG_PROD" > ~/.kube/config
-            echo "Kubeconfig written as plain YAML."
-          fi
+          python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
