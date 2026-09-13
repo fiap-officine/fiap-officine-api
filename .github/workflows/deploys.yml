@@ -80,7 +80,7 @@ jobs:
           WEBHOOK_SHARED_SECRET: ${{ secrets.HOMOLOG_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
-          python scripts/setup_kubeconfig.py
+          uv run python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
@@ -132,7 +132,7 @@ jobs:
           WEBHOOK_SHARED_SECRET: ${{ secrets.PROD_WEBHOOK_SHARED_SECRET || secrets.WEBHOOK_SHARED_SECRET || 'change-me' }}
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
-          python scripts/setup_kubeconfig.py
+          uv run python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
