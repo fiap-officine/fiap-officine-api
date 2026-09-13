@@ -81,7 +81,12 @@ jobs:
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
           mkdir -p ~/.kube
-          echo "$KUBE_CONFIG_HOMOLOG" | base64 -d > ~/.kube/config
+          if echo "$KUBE_CONFIG_HOMOLOG" | base64 -d > ~/.kube/config 2>/dev/null && [ -s ~/.kube/config ]; then
+            echo "Kubeconfig decoded from base64."
+          else
+            echo "$KUBE_CONFIG_HOMOLOG" > ~/.kube/config
+            echo "Kubeconfig written as plain YAML."
+          fi
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
@@ -134,7 +139,12 @@ jobs:
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: |
           mkdir -p ~/.kube
-          echo "$KUBE_CONFIG_PROD" | base64 -d > ~/.kube/config
+          if echo "$KUBE_CONFIG_PROD" | base64 -d > ~/.kube/config 2>/dev/null && [ -s ~/.kube/config ]; then
+            echo "Kubeconfig decoded from base64."
+          else
+            echo "$KUBE_CONFIG_PROD" > ~/.kube/config
+            echo "Kubeconfig written as plain YAML."
+          fi
           # 1. Aplicar namespace
           kubectl apply -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
