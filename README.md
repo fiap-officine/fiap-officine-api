@@ -96,6 +96,14 @@ A documentação interativa e os contratos OpenAPI podem ser consultados diretam
 * **Arquivo OpenAPI Local (Versionado)**:  
   [`docs/openapi.json`](docs/openapi.json) — Importável no Postman (Menu *Import* ➔ Arraste o arquivo `openapi.json`).
 
+### 🔐 Comportamento de Acesso e Códigos de Retorno das Rotas
+
+| Tipo de Rota | Endpoints | Autorização | Comportamento e Resposta |
+| :--- | :--- | :--- | :--- |
+| **Públicas** | `/health`, `/docs`, `/openapi.json`, `/redoc` | Nenhuma (`NONE`) | `200 OK` (retorna `503 Service Unavailable` apenas em janelas breves de reinicialização ou cold start do nó EC2 Free Tier) |
+| **Autenticação** | `POST /auth/login` | Nenhuma (Valida CPF) | `200 OK` contendo o `access_token` JWT assinado pela Lambda |
+| **Protegidas** | `/api/v1/ordens-servico/*`, `/api/v1/clientes/*`, etc. | **Bearer JWT Obrigatório** | • **Sem Token ou Inválido**: `401 Unauthorized` (bloqueado pelo **Lambda Authorizer** no API Gateway antes de tocar o cluster)<br>• **Com Token Válido**: `200 OK` / `201 Created` processado pela API |
+
 ---
 
 ## 🛠️ Como Executar Localmente
