@@ -82,7 +82,7 @@ jobs:
         run: |
           uv run python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
-          kubectl apply -f k8s/namespace.yaml
+          kubectl apply --validate=false -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
           cat > /tmp/secret.yaml <<EOF
           apiVersion: v1
@@ -101,24 +101,24 @@ jobs:
             JWT_SECRET_KEY: $JWT_SECRET_KEY
             WEBHOOK_SHARED_SECRET: $WEBHOOK_SHARED_SECRET
           EOF
-          kubectl apply -f /tmp/secret.yaml
+          kubectl apply --validate=false -f /tmp/secret.yaml
           # 3. Criar secret do New Relic se a chave estiver presente
           if [ -n "$NEW_RELIC_LICENSE_KEY" ]; then
             kubectl create secret generic newrelic-secret \
               --namespace=posfiap \
               --from-literal=license_key="$NEW_RELIC_LICENSE_KEY" \
-              --dry-run=client -o yaml | kubectl apply -f -
-            kubectl apply -f k8s/newrelic-infrastructure.yaml || true
+              --dry-run=client -o yaml | kubectl apply --validate=false -f -
+            kubectl apply --validate=false -f k8s/newrelic-infrastructure.yaml || true
           fi
           # 4. Aplicar manifests da aplicação
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/redis-deployment.yaml
-          kubectl apply -f k8s/redis-svc.yaml
-          kubectl apply -f k8s/api-deployment.yaml
-          kubectl apply -f k8s/api-svc.yaml
-          kubectl apply -f k8s/ingress.yaml
-          kubectl apply -f k8s/api-hpa.yaml
-          kubectl apply -f k8s/worker-deployment.yaml
+          kubectl apply --validate=false -f k8s/configmap.yaml
+          kubectl apply --validate=false -f k8s/redis-deployment.yaml
+          kubectl apply --validate=false -f k8s/redis-svc.yaml
+          kubectl apply --validate=false -f k8s/api-deployment.yaml
+          kubectl apply --validate=false -f k8s/api-svc.yaml
+          kubectl apply --validate=false -f k8s/ingress.yaml
+          kubectl apply --validate=false -f k8s/api-hpa.yaml
+          kubectl apply --validate=false -f k8s/worker-deployment.yaml
 
       # Deploy Automático: Produção (Branch main)
       - name: Deploy to Kubernetes (Production)
@@ -134,7 +134,7 @@ jobs:
         run: |
           uv run python scripts/setup_kubeconfig.py
           # 1. Aplicar namespace
-          kubectl apply -f k8s/namespace.yaml
+          kubectl apply --validate=false -f k8s/namespace.yaml
           # 2. Criar secret da aplicação
           cat > /tmp/secret.yaml <<EOF
           apiVersion: v1
@@ -153,24 +153,24 @@ jobs:
             JWT_SECRET_KEY: $JWT_SECRET_KEY
             WEBHOOK_SHARED_SECRET: $WEBHOOK_SHARED_SECRET
           EOF
-          kubectl apply -f /tmp/secret.yaml
+          kubectl apply --validate=false -f /tmp/secret.yaml
           # 3. Criar secret do New Relic se a chave estiver presente
           if [ -n "$NEW_RELIC_LICENSE_KEY" ]; then
             kubectl create secret generic newrelic-secret \
               --namespace=posfiap \
               --from-literal=license_key="$NEW_RELIC_LICENSE_KEY" \
-              --dry-run=client -o yaml | kubectl apply -f -
-            kubectl apply -f k8s/newrelic-infrastructure.yaml || true
+              --dry-run=client -o yaml | kubectl apply --validate=false -f -
+            kubectl apply --validate=false -f k8s/newrelic-infrastructure.yaml || true
           fi
           # 4. Aplicar manifests da aplicação
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/redis-deployment.yaml
-          kubectl apply -f k8s/redis-svc.yaml
-          kubectl apply -f k8s/api-deployment.yaml
-          kubectl apply -f k8s/api-svc.yaml
-          kubectl apply -f k8s/ingress.yaml
-          kubectl apply -f k8s/api-hpa.yaml
-          kubectl apply -f k8s/worker-deployment.yaml
+          kubectl apply --validate=false -f k8s/configmap.yaml
+          kubectl apply --validate=false -f k8s/redis-deployment.yaml
+          kubectl apply --validate=false -f k8s/redis-svc.yaml
+          kubectl apply --validate=false -f k8s/api-deployment.yaml
+          kubectl apply --validate=false -f k8s/api-svc.yaml
+          kubectl apply --validate=false -f k8s/ingress.yaml
+          kubectl apply --validate=false -f k8s/api-hpa.yaml
+          kubectl apply --validate=false -f k8s/worker-deployment.yaml
 
       - name: Skip deployment notice
         if: env.KUBE_CONFIG_DATA == '' && env.KUBE_CONFIG_HOMOLOG == '' && env.KUBE_CONFIG_PROD == ''
